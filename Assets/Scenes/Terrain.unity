@@ -808,7 +808,7 @@ MonoBehaviour:
     numSteps: 5
   grass:
     height: 1
-    startCol: {r: 0.30709326, g: 0.9716981, b: 0.35433176, a: 0}
+    startCol: {r: 0.7735849, g: 0.6376666, b: 0.3977394, a: 0}
     endCol: {r: 0, g: 0.3301887, b: 0.06603775, a: 0}
     numSteps: 10
   numTiles: 10000
