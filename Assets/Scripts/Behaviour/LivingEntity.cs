@@ -4,8 +4,7 @@ public class LivingEntity : MonoBehaviour {
 
     public int colourMaterialIndex;
     public Species species;
-    public Material material;
-
+    public Material material;    
     public Coord coord;
     //
     [HideInInspector]

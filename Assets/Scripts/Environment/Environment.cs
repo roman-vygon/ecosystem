@@ -13,11 +13,12 @@ public class Environment : MonoBehaviour {
     public MeshRenderer treePrefab;
     [Range (0, 1)]
     public float treeProbability;
-
+    
     [Header ("Populations")]
     public Population[] initialPopulations;
 
-    [Header ("Debug")]
+    [Header("Debug")]
+    public float timeScale;
     public bool showMapDebug;
     public Transform mapCoordTransform;
     public float mapViewDst;
@@ -28,7 +29,7 @@ public class Environment : MonoBehaviour {
     static int size;
     static Coord[, ][] walkableNeighboursMap;
     static List<Coord> walkableCoords;
-
+    
     static Dictionary<Species, List<Species>> preyBySpecies;
     static Dictionary<Species, List<Species>> predatorsBySpecies;
 
@@ -38,25 +39,25 @@ public class Environment : MonoBehaviour {
     static System.Random prng;
     TerrainGenerator.TerrainData terrainData;
 
-    static Dictionary<Species, Map> speciesMaps;
+    public static Dictionary<Species, Map> speciesMaps;
 
     void Start () {
         prng = new System.Random ();
-
+        Time.timeScale = timeScale;
         Init ();
         SpawnInitialPopulations ();
 
     }
-
+    static public double getRandomDouble()
+    {
+        return prng.NextDouble();
+    }
     void OnDrawGizmos () {
-        /* 
+         
         if (showMapDebug) {
-            if (preyMap != null && mapCoordTransform != null) {
-                Coord coord = new Coord ((int) mapCoordTransform.position.x, (int) mapCoordTransform.position.z);
-                preyMap.DrawDebugGizmos (coord, mapViewDst);
-            }
+            speciesMaps[Species.Human].DrawDebugGizmos(new Coord(0, 0), 2);
         }
-        */
+        
     }
 
     public static void RegisterMove (LivingEntity entity, Coord from, Coord to) {
@@ -108,19 +109,34 @@ public class Environment : MonoBehaviour {
         Map speciesMap = speciesMaps[self.species];
         List<LivingEntity> visibleEntities = speciesMap.GetEntities (coord, Animal.maxViewDistance);
         var potentialMates = new List<Animal> ();
-
+        
         for (int i = 0; i < visibleEntities.Count; i++) {
             var visibleAnimal = (Animal) visibleEntities[i];
             if (visibleAnimal != self && visibleAnimal.genes.isMale != self.genes.isMale) {
-                if (visibleAnimal.currentAction == CreatureAction.SearchingForMate) {
+                if (visibleAnimal.mate == null && visibleAnimal.currentAction == CreatureAction.SearchingForMate) {
                     potentialMates.Add (visibleAnimal);
                 }
             }
         }
 
         return potentialMates;
+    }    
+    public static House SenseHouse(Coord coord, float radius)
+    {
+        House[] houses = FindObjectsOfType<House>();
+        float sqrViewDst = radius*radius;
+        House nearestHouse = null;
+        foreach (House house in houses)
+        {
+            float dist = Coord.SqrDistance(coord, house.coord);
+            if (dist < sqrViewDst)
+            {
+                sqrViewDst = dist;
+                nearestHouse = house;
+            }
+        }
+        return nearestHouse;
     }
-
     public static Surroundings Sense (Coord coord) {
         var closestPlant = speciesMaps[Species.Plant].ClosestEntity (coord, Animal.maxViewDistance);
         var surroundings = new Surroundings ();
@@ -181,7 +197,10 @@ public class Environment : MonoBehaviour {
 
         return bestNeighbour;
     }
-
+    static public int getInt(int left, int right)
+    {
+        return prng.Next(left, right);
+    }
     // Call terrain generator and cache useful info
     void Init () {
         var sw = System.Diagnostics.Stopwatch.StartNew ();
@@ -205,7 +224,7 @@ public class Environment : MonoBehaviour {
 
             preyBySpecies.Add (species, new List<Species> ());
             predatorsBySpecies.Add (species, new List<Species> ());
-        }
+        }        
 
         // Store predator/prey relationships for all species
         for (int i = 0; i < initialPopulations.Length; i++) {
@@ -304,7 +323,7 @@ public class Environment : MonoBehaviour {
         float maxRot = 4;
         float maxScaleDeviation = .2f;
         float colVariationFactor = 0.15f;
-        float minCol = .8f;
+        float minCol = .4f;
 
         var spawnPrng = new System.Random (seed);
         var treeHolder = new GameObject ("Tree holder").transform;
@@ -332,7 +351,7 @@ public class Environment : MonoBehaviour {
                         tree.transform.parent = treeHolder;
                         tree.transform.localScale = Vector3.one * scale;
                         tree.material.color = new Color (r, g, b);
-
+                        
                         // Mark tile unwalkable
                         walkable[x, y] = false;
                     } else {
@@ -341,14 +360,15 @@ public class Environment : MonoBehaviour {
                 }
             }
         }
-    }
-
-    void SpawnInitialPopulations () {
-
+    }    
+        void SpawnInitialPopulations () {
+        
+        
         var spawnPrng = new System.Random (seed);
         var spawnCoords = new List<Coord> (walkableCoords);
 
         foreach (var pop in initialPopulations) {
+            EnvironmentUtility.prefabBySpecies[pop.prefab.species] = pop.prefab;
             for (int i = 0; i < pop.count; i++) {
                 if (spawnCoords.Count == 0) {
                     Debug.Log ("Ran out of empty tiles to spawn initial population");
@@ -359,8 +379,9 @@ public class Environment : MonoBehaviour {
                 spawnCoords.RemoveAt (spawnCoordIndex);
 
                 var entity = Instantiate (pop.prefab);
-                entity.Init (coord);
-
+                
+                entity.Init (coord);                
+                
                 speciesMaps[entity.species].Add (entity, coord);
             }
         }

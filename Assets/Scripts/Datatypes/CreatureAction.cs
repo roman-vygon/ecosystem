@@ -4,7 +4,10 @@
     Exploring,
     GoingToFood,
     GoingToWater,
+    GoingToMate,
     Eating,
     Drinking,
-    SearchingForMate
+    SearchingForMate,
+    Building,
+    RestingInHome
 }

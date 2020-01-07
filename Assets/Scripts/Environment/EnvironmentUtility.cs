@@ -5,6 +5,7 @@ using UnityEngine;
 public static class EnvironmentUtility {
 
     // returns true if unobstructed line of sight to target tile
+    public static Dictionary<Species,LivingEntity> prefabBySpecies = new Dictionary<Species, LivingEntity>();
     public static bool TileIsVisibile (int x, int y, int x2, int y2) {
         // bresenham line algorithm
         int w = x2 - x;

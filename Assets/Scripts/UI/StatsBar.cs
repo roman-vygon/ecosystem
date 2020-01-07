@@ -11,7 +11,6 @@ public class StatsBar : MonoBehaviour
     void Start()
     {   
         Canvas c = gameObject.GetComponentsInChildren<Canvas>()[0];
-        Debug.Log(c);
         hunger = c.GetComponentsInChildren<Slider>()[0];
         thirst = c.GetComponentsInChildren<Slider>()[1];
         parent = gameObject.GetComponent<Animal>();

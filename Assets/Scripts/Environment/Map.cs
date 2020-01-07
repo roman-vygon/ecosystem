@@ -5,7 +5,7 @@ using UnityEngine;
 // The map is divided into n x n regions, with a list of entities for each region
 // This allows an entity to more quickly find other nearby entities
 public class Map {
-    public readonly List<LivingEntity>[, ] map;
+    public readonly List<LivingEntity>[, ] map;    
     readonly Vector2[, ] centres;
     readonly int regionSize;
     readonly int numRegions;
@@ -23,7 +23,7 @@ public class Map {
                 Coord regionTopRight = new Coord (x * regionSize + regionSize, y * regionSize + regionSize);
                 Vector2 centre = (Vector2) (regionBottomLeft + regionTopRight) / 2f;
                 centres[x, y] = centre;
-                map[x, y] = new List<LivingEntity> ();
+                map[x, y] = new List<LivingEntity> ();                
             }
         }
     }
@@ -48,8 +48,7 @@ public class Map {
         }
 
         return visibleEntities;
-    }
-
+    }    
     public LivingEntity ClosestEntity (Coord origin, float viewDistance) {
         List<RegionInfo> visibleRegions = GetRegionsInView (origin, viewDistance);
         LivingEntity closestEntity = null;

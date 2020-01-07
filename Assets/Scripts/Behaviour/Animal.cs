@@ -7,8 +7,7 @@ public class Animal : LivingEntity {
     public const int maxViewDistance = 10;
 
     [EnumFlags]
-    public Species diet;
-
+    public Species diet;    
     public CreatureAction currentAction;
     public Genes genes;
     public Color maleColour;
@@ -17,8 +16,9 @@ public class Animal : LivingEntity {
     // Settings:
     float timeBetweenActionChoices = 1;
     float moveSpeed = 1.5f;
-    float timeToDeathByHunger = 60;
-    float timeToDeathByThirst = 60;
+    float timeToDeathByHunger = 256;
+    float timeToGrowth = 64;
+    float timeToDeathByThirst = 128;
 
     float drinkDuration = 6;
     float eatDuration = 10;
@@ -28,14 +28,19 @@ public class Animal : LivingEntity {
     // Visual settings:
     float moveArcHeight = .2f;
 
+    
     // State:
     [Header ("State")]
     public float hunger;
     public float thirst;
-
+    public float size;
+    public float reproductionWill;
+    
     protected LivingEntity foodTarget;
     protected Coord waterTarget;
 
+    Vector3 baseScale;
+    public Animal mate = null;    
     // Move data:
     bool animatingMovement;
     Coord moveFromCoord;
@@ -45,28 +50,31 @@ public class Animal : LivingEntity {
     float moveTime;
     float moveSpeedFactor;
     float moveArcHeightFactor;
-    Coord[] path;
-    int pathIndex;    
+    protected Coord[] path;
+    protected int pathIndex;    
     // Other
     float lastActionChooseTime;
     const float sqrtTwo = 1.4142f;
     const float oneOverSqrtTwo = 1 / sqrtTwo;
 
     public override void Init (Coord coord) {
-        base.Init (coord);
+        base.Init (coord);        
         moveFromCoord = coord;
-        genes = Genes.RandomGenes (1);                
-        //material.color = (genes.isMale) ? maleColour : femaleColour;              
-
+        genes = Genes.RandomGenes (1);
+        size = 0.3f;
+        baseScale = transform.localScale;
         ChooseNextAction();
     }
-
-
 
     protected virtual void Update () {
 
         // Increase hunger and thirst over time
         hunger += Time.deltaTime * 1 / timeToDeathByHunger;
+        reproductionWill += Time.deltaTime * 10 *size / timeToDeathByHunger;
+        reproductionWill = Mathf.Clamp01(reproductionWill);
+        size += Time.deltaTime * 1 / timeToGrowth;
+        size = Mathf.Clamp01(size);
+        transform.localScale = size * baseScale;
         thirst += Time.deltaTime * 1 / timeToDeathByThirst;
 
         // Animate movement. After moving a single tile, the animal will be able to choose its next action
@@ -94,17 +102,38 @@ public class Animal : LivingEntity {
         lastActionChooseTime = Time.time;
         // Get info about surroundings
 
+        if (currentAction == CreatureAction.GoingToMate)
+        {
+            Act();
+            return;
+        }
+
+        //if ((currentAction == CreatureAction.Drinking && thirst > 0.01) || (currentAction == CreatureAction.Eating && hunger > 0.01))
+          //  return;
         // Decide next action:
         // Eat if (more hungry than thirsty) or (currently eating and not critically thirsty)
         bool currentlyEating = currentAction == CreatureAction.Eating && foodTarget && hunger > 0;
-        if (hunger >= thirst || currentlyEating && thirst < criticalPercent) {
+        if ((hunger >= thirst && hunger > 0.3) || currentlyEating && thirst < criticalPercent) {
             FindFood ();
         }
         // More thirsty than hungry
         else {
-            FindWater ();
+            if (thirst > 0.3)
+                FindWater();
+            else
+            if (reproductionWill > 0.3)
+            {
+                currentAction = CreatureAction.SearchingForMate;
+                FindMate();
+            }
+            else
+                if (Environment.getRandomDouble() > 0.9)
+                currentAction = CreatureAction.Resting;
+            else
+                currentAction = CreatureAction.Exploring;
         }
 
+        
         Act ();
 
     }
@@ -132,16 +161,71 @@ public class Animal : LivingEntity {
             currentAction = CreatureAction.Exploring;
         }
     }
+    protected virtual void FindMate()
+    {   
+        List<Animal> mates = Environment.SensePotentialMates(coord, this);
+
+        if (mates.Count != 0)
+        {            
+            foreach(Animal possibleMate in mates)
+            {
+                if (possibleMate.reproductionWill > 0.3)
+                {
+                    if (genes.isMale)
+                    {
+                        mate = possibleMate;
+                        mate.mate = this;
+                        currentAction = CreatureAction.GoingToMate;
+                        CreatePath(mate.coord);
+                        mate.CreatePath(mate.coord);
+                        mate.currentAction = CreatureAction.GoingToMate;
+                        return;
+                    }
+                }
+            }            
+            
+        }
+        else
+        {
+            currentAction = CreatureAction.SearchingForMate;
+        }
+    }
 
     // When choosing from multiple food sources, the one with the lowest penalty will be selected
     protected virtual int FoodPreferencePenalty (LivingEntity self, LivingEntity food) {
         return Coord.SqrDistance (self.coord, food.coord);
     }
 
-    protected void Act () {
+    
+    protected void giveBirth()
+    {
+        var entity = Instantiate(EnvironmentUtility.prefabBySpecies[this.species]);
+        entity.Init(this.coord);        
+        Environment.speciesMaps[entity.species].Add(entity, this.coord);
+    }
+    protected virtual void Act () {
         switch (currentAction) {
-            case CreatureAction.Exploring:
+            case CreatureAction.Exploring:                
                 StartMoveToCoord (Environment.GetNextTileWeighted (coord, moveFromCoord));
+                break;
+            case CreatureAction.SearchingForMate:
+                StartMoveToCoord(Environment.GetNextTileWeighted(coord, moveFromCoord));
+                break;
+            case CreatureAction.GoingToMate:
+                
+                if (Coord.AreNeighbours(coord, mate.coord))
+                {
+                    LookAt(mate.coord);                    
+                    if (genes.isMale == false)                    
+                        giveBirth();                                            
+                    reproductionWill = 0;
+                    currentAction = CreatureAction.Resting;
+                }
+                else
+                {                    
+                    StartMoveToCoord(path[pathIndex]);
+                    pathIndex++;                    
+                }
                 break;
             case CreatureAction.GoingToFood:
                 if (Coord.AreNeighbours (coord, foodTarget.coord)) {
@@ -164,12 +248,18 @@ public class Animal : LivingEntity {
         }
     }
 
-    protected void CreatePath (Coord target) {
+    public void CreatePath (Coord target) {
         // Create new path if current is not already going to target
-        if (path == null || pathIndex >= path.Length || (path[path.Length - 1] != target || path[pathIndex - 1] != moveTargetCoord)) {
+        if (path == null) {
             path = EnvironmentUtility.GetPath (coord.x, coord.y, target.x, target.y);
             pathIndex = 0;
         }
+        else
+            if (pathIndex >= path.Length || (path[path.Length - 1] != target || path[pathIndex - 1] != moveTargetCoord))
+            {            
+                path = EnvironmentUtility.GetPath(coord.x, coord.y, target.x, target.y);
+                pathIndex = 0;            
+            }
     }
 
     protected void StartMoveToCoord (Coord target) {
@@ -193,7 +283,7 @@ public class Animal : LivingEntity {
     }
 
     void HandleInteractions () {
-        if (currentAction == CreatureAction.Eating) {
+        if (currentAction == CreatureAction.Eating) {            
             if (foodTarget && hunger > 0) {
                 float eatAmount = Mathf.Min (hunger, Time.deltaTime * 1 / eatDuration);                
                 if (foodTarget is Animal)
@@ -224,7 +314,6 @@ public class Animal : LivingEntity {
 
         // Finished moving
         if (moveTime >= 1) {
-            Debug.Log(1);
             Environment.RegisterMove (this, moveFromCoord, moveTargetCoord);
             coord = moveTargetCoord;
 
@@ -255,7 +344,18 @@ public class Animal : LivingEntity {
                 Gizmos.DrawSphere(Environment.tileCentres[moveTargetCoord.x, moveTargetCoord.y], .2f);
 
             }
-            
+            if (currentAction == CreatureAction.GoingToMate)
+            {                
+                Gizmos.color = Color.black;
+                if (path != null)
+                {
+                    for (int i = 0; i < path.Length; i++)
+                    {
+                        Gizmos.DrawSphere(Environment.tileCentres[path[i].x, path[i].y], .2f);
+                    }
+                }
+            }
+
             if (currentAction == CreatureAction.GoingToFood) {
                 var path = EnvironmentUtility.GetPath (coord.x, coord.y, foodTarget.coord.x, foodTarget.coord.y);
                 Gizmos.color = Color.black;
