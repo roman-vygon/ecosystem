@@ -52,6 +52,7 @@ MonoBehaviour:
   coord:
     x: 0
     y: 0
+  timeToDie: 1024
   mapIndex: 0
   mapCoord:
     x: 0
@@ -60,8 +61,16 @@ MonoBehaviour:
   currentAction: 0
   maleColour: {r: 0.7735849, g: 0.45909515, b: 0.0693307, a: 0}
   femaleColour: {r: 0.745283, g: 0.4895533, b: 0.10194911, a: 0}
+  timeToDeathByHunger: 256
+  timeToDeathByThirst: 64
+  numOffsprings: 1
   hunger: 0
   thirst: 0
+  size: 0
+  reproductionWill: 0
+  hunter: {fileID: 0}
+  mate: {fileID: 0}
+  Male: 0
 --- !u!114 &1941828319729467337
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,12 +310,6 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0.151
       objectReference: {fileID: 0}
-    - target: {fileID: -5178661895559278292, guid: f892f7f7fafa34650a0281cc707ca6bf,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: -2432090755550338912, guid: 6265a60af462ba8408f7ddd079a5dd36,
-        type: 3}
     - target: {fileID: -1504981713932161579, guid: f892f7f7fafa34650a0281cc707ca6bf,
         type: 3}
       propertyPath: m_Materials.Array.size
@@ -327,6 +330,12 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[2]
       value: 
       objectReference: {fileID: 2100000, guid: cfbd26daf7dbb4d719b990106ffc7704, type: 2}
+    - target: {fileID: -5178661895559278292, guid: f892f7f7fafa34650a0281cc707ca6bf,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -2432090755550338912, guid: 6265a60af462ba8408f7ddd079a5dd36,
+        type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f892f7f7fafa34650a0281cc707ca6bf, type: 3}
 --- !u!4 &3589958743518307327 stripped

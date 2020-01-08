@@ -9,6 +9,8 @@ public class Map {
     readonly Vector2[, ] centres;
     readonly int regionSize;
     readonly int numRegions;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
     public int numEntities;
 
     public Map (int size, int regionSize) {
@@ -132,9 +134,17 @@ public class Map {
         int index = e.mapIndex;
         int lastElementIndex = map[regionX, regionY].Count - 1;
         // If this entity is not last in the list, put the last entity in its place
-        if (index != lastElementIndex) {            
-            map[regionX, regionY][index] = map[regionX, regionY][lastElementIndex];
-            map[regionX, regionY][index].mapIndex = e.mapIndex;
+        if (index != lastElementIndex) {
+            try
+            {
+                map[regionX, regionY][index] = map[regionX, regionY][lastElementIndex];
+                map[regionX, regionY][index].mapIndex = e.mapIndex;
+            }
+            catch
+            {
+                Debug.Log(index, e);
+                Debug.Log(map[regionX,regionY], e);
+            }
         }
         // Remove last entity from the list
         

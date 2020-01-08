@@ -6,6 +6,9 @@ public class LivingEntity : MonoBehaviour {
     public Species species;
     public Material material;    
     public Coord coord;
+
+    public float timeToDie;
+    float birthTime;
     //
     [HideInInspector]
     public int mapIndex;
@@ -28,6 +31,10 @@ public class LivingEntity : MonoBehaviour {
             }
         }
     }
+    public virtual void Start()
+    {
+        birthTime = Time.time;
+    }
 
     public virtual void Die (CauseOfDeath cause) {
         if (!dead) {
@@ -35,5 +42,15 @@ public class LivingEntity : MonoBehaviour {
             Environment.RegisterDeath (this);
             Destroy (gameObject);
         }
+        else
+        {
+
+        }
+    }
+    public virtual void Update()
+    {
+        if (Time.time - birthTime >= timeToDie)        
+            Die(CauseOfDeath.Age);
+        
     }
 }

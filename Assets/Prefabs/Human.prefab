@@ -64,6 +64,7 @@ MonoBehaviour:
   coord:
     x: 0
     y: 0
+  timeToDie: 1024
   mapIndex: 0
   mapCoord:
     x: 0
@@ -72,12 +73,18 @@ MonoBehaviour:
   currentAction: 0
   maleColour: {r: 0.8679245, g: 0.045033824, b: 0.045033824, a: 0}
   femaleColour: {r: 0.09416164, g: 0.8679245, b: 0.10193505, a: 0}
+  timeToDeathByHunger: 256
+  timeToDeathByThirst: 128
+  numOffsprings: 1
   hunger: 0
   thirst: 0
   size: 0
   reproductionWill: 0
+  hunter: {fileID: 0}
   mate: {fileID: 0}
+  Male: 0
   House: {fileID: -1551259198748328597, guid: aff8e0d26e2dbd44c86e8a47dd12ab3d, type: 3}
+  myHouse: {fileID: 0}
 --- !u!1001 &8603396577785982218
 PrefabInstance:
   m_ObjectHideFlags: 0

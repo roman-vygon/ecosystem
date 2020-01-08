@@ -9,5 +9,6 @@
     Drinking,
     SearchingForMate,
     Building,
-    RestingInHome
+    RestingInHome,
+    RunningAway
 }

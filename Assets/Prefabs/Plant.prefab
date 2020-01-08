@@ -50,10 +50,12 @@ MonoBehaviour:
   coord:
     x: 0
     y: 0
+  timeToDie: 129
   mapIndex: 0
   mapCoord:
     x: 0
     y: 0
+  timeToReproduct: 64
 --- !u!1001 &4316666322519822088
 PrefabInstance:
   m_ObjectHideFlags: 0

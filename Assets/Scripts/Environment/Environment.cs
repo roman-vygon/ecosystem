@@ -2,12 +2,27 @@
 using System.Collections.Generic;
 using TerrainGeneration;
 using UnityEngine;
+using System.IO;
 
 public class Environment : MonoBehaviour {
 
     const int mapRegionSize = 10;
 
     public int seed;
+    float lastLogTime;
+    float logInterval = 1;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numRabbit;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numFox;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numHuman;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numPlant;
 
     [Header ("Trees")]
     public MeshRenderer treePrefab;
@@ -44,6 +59,7 @@ public class Environment : MonoBehaviour {
     void Start () {
         prng = new System.Random ();
         Time.timeScale = timeScale;
+        lastLogTime = Time.time;
         Init ();
         SpawnInitialPopulations ();
 
@@ -60,6 +76,10 @@ public class Environment : MonoBehaviour {
         
     }
 
+    public static void RegisterBirth(LivingEntity entity, Coord placeOfBirth)
+    {
+        speciesMaps[entity.species].Add(entity, placeOfBirth);
+    }
     public static void RegisterMove (LivingEntity entity, Coord from, Coord to) {
         speciesMaps[entity.species].Move (entity, from, to);
     }
@@ -79,6 +99,29 @@ public class Environment : MonoBehaviour {
         return Coord.invalid;
     }
 
+    public static Animal SensePredators(Animal e)
+    {
+        List<LivingEntity> hunters = new List<LivingEntity>();
+        foreach (Species s in preyBySpecies.Keys)
+            if (preyBySpecies[s].Contains(e.species))
+                hunters.AddRange(speciesMaps[s].GetEntities(e.coord, Animal.maxViewDistance));
+        float minDist = Animal.maxViewDistance*Animal.maxViewDistance + 1;
+        if (hunters.Count == 0)
+            return null;
+        Animal predator = null;
+        foreach (LivingEntity hunter in hunters)
+        {
+            
+            if (EnvironmentUtility.TileIsVisibile(e.coord.x, e.coord.y, hunter.coord.x, hunter.coord.y))
+                if ((hunter as Animal).currentAction == CreatureAction.GoingToFood)
+                    if (Coord.SqrDistance(e.coord, hunter.coord) < minDist)
+                    {
+                        predator = hunter as Animal;
+                        minDist = Coord.SqrDistance(e.coord, hunter.coord);
+                    }
+        }        
+        return predator;
+    }
     public static LivingEntity SenseFood (Coord coord, Animal self, System.Func<LivingEntity, LivingEntity, int> foodPreference) {
         var foodSources = new List<LivingEntity> ();
 
@@ -146,6 +189,28 @@ public class Environment : MonoBehaviour {
         return surroundings;
     }
 
+    public static Coord GetNextTileAway(Coord current, Coord from)
+    {
+        int tempX = 0, tempY = 0;
+        if (from.x > current.x)
+            tempX = -1;
+        else
+            tempX = 1;
+        if (from.y > current.y)
+            tempY = -1;
+        else
+            tempY = 1;
+        List<Coord> tries = new List<Coord>();
+        tries.Add(new Coord(current.x + tempX, current.y + tempY));
+        tries.Add(new Coord(current.x, current.y + tempY));
+        tries.Add(new Coord(current.x+tempX, current.y));        
+
+        foreach (Coord c in tries)
+            if (c.x > 0 && c.y > 0 && c.x < walkable.GetLength(0) && c.y < walkable.GetLength(1))
+                if (walkable[c.x, c.y])
+                    return c;
+        return GetNextTileRandom(current);
+    }
     public static Coord GetNextTileRandom (Coord current) {
         var neighbours = walkableNeighboursMap[current.x, current.y];
         if (neighbours.Length == 0) {
@@ -317,8 +382,15 @@ public class Environment : MonoBehaviour {
         }
         Debug.Log ("Init time: " + sw.ElapsedMilliseconds);
     }
+    static void WriteString(string path, string text)
+    {        
 
-    void SpawnTrees () {
+        //Write some text to the test.txt file
+        StreamWriter writer = new StreamWriter(path, true);
+        writer.Write(text);
+        writer.Close();
+    }
+        void SpawnTrees () {
         // Settings:
         float maxRot = 4;
         float maxScaleDeviation = .2f;
@@ -368,6 +440,7 @@ public class Environment : MonoBehaviour {
         var spawnCoords = new List<Coord> (walkableCoords);
 
         foreach (var pop in initialPopulations) {
+
             EnvironmentUtility.prefabBySpecies[pop.prefab.species] = pop.prefab;
             for (int i = 0; i < pop.count; i++) {
                 if (spawnCoords.Count == 0) {
@@ -413,7 +486,26 @@ public class Environment : MonoBehaviour {
             print (s);
         }
     }
+    void Update()
+    {
+        numFox = speciesMaps[Species.Fox].numEntities;
 
+        numHuman = speciesMaps[Species.Human].numEntities;
+
+        numPlant = speciesMaps[Species.Plant].numEntities;
+
+        numRabbit = speciesMaps[Species.Rabbit].numEntities;
+
+        if (Time.time - lastLogTime > logInterval)
+        {
+            WriteString("fox.txt", speciesMaps[Species.Fox].numEntities.ToString() + ", ");
+            WriteString("rabbit.txt", speciesMaps[Species.Rabbit].numEntities.ToString() + ", ");
+            WriteString("human.txt", speciesMaps[Species.Human].numEntities.ToString() + ", ");
+            WriteString("plant.txt", speciesMaps[Species.Plant].numEntities.ToString() + ", ");
+            lastLogTime = Time.time;
+        }
+        
+    }
     [System.Serializable]
     public struct Population {
         public LivingEntity prefab;

@@ -52,6 +52,7 @@ MonoBehaviour:
   coord:
     x: 0
     y: 0
+  timeToDie: 256
   mapIndex: 0
   mapCoord:
     x: 0
@@ -60,8 +61,16 @@ MonoBehaviour:
   currentAction: 0
   maleColour: {r: 1, g: 0, b: 0, a: 0}
   femaleColour: {r: 0.12677497, g: 0.9339623, b: 0, a: 0}
+  timeToDeathByHunger: 128
+  timeToDeathByThirst: 64
+  numOffsprings: 3
   hunger: 0
   thirst: 0
+  size: 0
+  reproductionWill: 0
+  hunter: {fileID: 0}
+  mate: {fileID: 0}
+  Male: 0
 --- !u!114 &5618443917203713628
 MonoBehaviour:
   m_ObjectHideFlags: 0
