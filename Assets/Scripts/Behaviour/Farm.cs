@@ -21,5 +21,6 @@ public class Farm : Building
         transform.position = Environment.tileCentres[coord.x, coord.y];
         this.worker = worker;
         worker.myFarm = this;
+        buildingType = BuildingTypes.Farm;
     }
 }

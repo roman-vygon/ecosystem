@@ -1,19 +1,19 @@
 ﻿using UnityEngine;
 
-public class LivingEntity : MonoBehaviour {
+public class LivingEntity : MonoBehaviour, ICoordInterface {
 
     public int colourMaterialIndex;
     public Species species;
     public Material material;    
-    public Coord coord;
+    public Coord coord { get; set; }
 
     public float timeToDie;
     float birthTime;
     
     [HideInInspector]
-    public int mapIndex;
+    public int mapIndex { get; set; }
     [HideInInspector]
-    public Coord mapCoord;
+    public Coord mapCoord { get; set; }
 
     protected bool dead;
 

@@ -66,7 +66,8 @@ public class Environment : MonoBehaviour {
     static System.Random prng;
     TerrainGenerator.TerrainData terrainData;
 
-    public static Dictionary<Species, Map> speciesMaps;
+    public static Dictionary<Species, Map<LivingEntity>> speciesMaps;
+    public static Dictionary<BuildingTypes, Map<Building>> buildingMaps;
 
     void Start () {
         prng = new System.Random ();
@@ -87,17 +88,26 @@ public class Environment : MonoBehaviour {
         }
         
     }
-
-    public static void RegisterBirth(LivingEntity entity, Coord placeOfBirth)
+    
+    public static void RegisterBirth(ICoordInterface entity, Coord placeOfBirth)
     {
-        speciesMaps[entity.species].Add(entity, placeOfBirth);
+        if (entity is LivingEntity)
+            speciesMaps[(entity as LivingEntity).species].Add((entity as LivingEntity), placeOfBirth);
+        
+        if (entity is Building)
+            buildingMaps[(entity as Building).buildingType].Add((entity as Building), placeOfBirth);
     }
     public static void RegisterMove (LivingEntity entity, Coord from, Coord to) {
         speciesMaps[entity.species].Move (entity, from, to);
     }
 
-    public static void RegisterDeath (LivingEntity entity) {
-        speciesMaps[entity.species].Remove (entity, entity.coord);
+    public static void RegisterDeath (ICoordInterface entity) {
+
+        if (entity is LivingEntity)
+            speciesMaps[(entity as LivingEntity).species].Remove((entity as LivingEntity), entity.coord);
+
+        if (entity is Building)
+            buildingMaps[(entity as Building).buildingType].Add((entity as Building), entity.coord);
     }
 
     public static Coord SenseWater (Coord coord) {
@@ -115,8 +125,7 @@ public class Environment : MonoBehaviour {
     {
         float radius = Animal.maxViewDistance * 1f / 5f;
         List<LivingEntity> hunters = new List<LivingEntity>();
-        foreach (Species s in preyBySpecies.Keys)
-            if (preyBySpecies[s].Contains(e.species))
+        foreach (Species s in predatorsBySpecies[e.species])            
                 hunters.AddRange(speciesMaps[s].GetEntities(e.coord, radius));
         float minDist = radius * radius + 1;
         if (hunters.Count == 0)
@@ -135,9 +144,9 @@ public class Environment : MonoBehaviour {
         }        
         return predator;
     }
-    public static T senseBuilding<T>(Coord coord, Human self)
+    public static void senseBuilding<T>(Coord coord, Human self)
     {
-
+        
     }
     public static LivingEntity SenseFood (Coord coord, Animal self, System.Func<LivingEntity, LivingEntity, int> foodPreference) {
         var foodSources = new List<LivingEntity> ();
@@ -145,7 +154,7 @@ public class Environment : MonoBehaviour {
         List<Species> prey = preyBySpecies[self.species];
         for (int i = 0; i < prey.Count; i++) {
 
-            Map speciesMap = speciesMaps[prey[i]];
+            Map<LivingEntity> speciesMap = speciesMaps[prey[i]];
 
             foodSources.AddRange (speciesMap.GetEntities (coord, Animal.maxViewDistance));
         }
@@ -166,7 +175,7 @@ public class Environment : MonoBehaviour {
 
     // Return list of animals of the same species, with the opposite gender, who are also searching for a mate
     public static List<Animal> SensePotentialMates (Coord coord, Animal self) {
-        Map speciesMap = speciesMaps[self.species];
+        Map<LivingEntity> speciesMap = speciesMaps[self.species];
         List<LivingEntity> visibleEntities = speciesMap.GetEntities (coord, Animal.maxViewDistance/2);
         var potentialMates = new List<Animal> ();
         
@@ -295,18 +304,27 @@ public class Environment : MonoBehaviour {
         size = terrainData.size;
 
         int numSpecies = System.Enum.GetNames (typeof (Species)).Length;
+        int numBuldings = System.Enum.GetNames(typeof(BuildingTypes)).Length;
         preyBySpecies = new Dictionary<Species, List<Species>> ();
         predatorsBySpecies = new Dictionary<Species, List<Species>> ();
 
-        // Init species maps
-        speciesMaps = new Dictionary<Species, Map> ();
+        // Init maps
+        speciesMaps = new Dictionary<Species, Map<LivingEntity>> ();
+        buildingMaps = new Dictionary<BuildingTypes, Map<Building>>();
+
         for (int i = 0; i < numSpecies; i++) {
             Species species = (Species) (1 << i);
-            speciesMaps.Add (species, new Map (size, mapRegionSize));
+            speciesMaps.Add (species, new Map<LivingEntity> (size, mapRegionSize));
 
             preyBySpecies.Add (species, new List<Species> ());
             predatorsBySpecies.Add (species, new List<Species> ());
         }        
+
+        for (int i = 0; i < numBuldings; ++i)
+        {
+            BuildingTypes buildingTypes = (BuildingTypes)(1 << i);
+            buildingMaps.Add(buildingTypes, new Map<Building>(size, mapRegionSize));
+        }
 
         // Store predator/prey relationships for all species
         for (int i = 0; i < initialPopulations.Length; i++) {

@@ -10,6 +10,7 @@ public class Barn : Building
     {
         this.coord = coord;
         numFood = 0;
+        buildingType = BuildingTypes.Barn;
     }    
     public void restock()
     {

@@ -4,8 +4,15 @@ using UnityEngine;
 
 // The map is divided into n x n regions, with a list of entities for each region
 // This allows an entity to more quickly find other nearby entities
-public class Map {
-    public readonly List<LivingEntity>[, ] map;    
+public interface ICoordInterface
+{
+    int mapIndex { get; set; }
+    Coord coord { get; set; }
+
+    Coord mapCoord { get; set; }
+}
+public class Map<T> where T : ICoordInterface {
+    public readonly List<T>[, ] map;    
     readonly Vector2[, ] centres;
     readonly int regionSize;
     readonly int numRegions;
@@ -16,7 +23,7 @@ public class Map {
     public Map (int size, int regionSize) {
         this.regionSize = regionSize;
         numRegions = Mathf.CeilToInt (size / (float) regionSize);
-        map = new List<LivingEntity>[numRegions, numRegions];
+        map = new List<T>[numRegions, numRegions];
         centres = new Vector2[numRegions, numRegions];
 
         for (int y = 0; y < numRegions; y++) {
@@ -25,21 +32,21 @@ public class Map {
                 Coord regionTopRight = new Coord (x * regionSize + regionSize, y * regionSize + regionSize);
                 Vector2 centre = (Vector2) (regionBottomLeft + regionTopRight) / 2f;
                 centres[x, y] = centre;
-                map[x, y] = new List<LivingEntity> ();                
+                map[x, y] = new List<T> ();                
             }
         }
     }
 
-    public List<LivingEntity> GetEntities (Coord origin, float viewDistance) {
+    public List<T> GetEntities (Coord origin, float viewDistance) {
         List<RegionInfo> visibleRegions = GetRegionsInView (origin, viewDistance);
         float sqrViewDst = viewDistance * viewDistance;
-        var visibleEntities = new List<LivingEntity> ();
+        var visibleEntities = new List<T> ();
 
         for (int i = 0; i < visibleRegions.Count; i++) {
             Coord regionCoord = visibleRegions[i].coord;
 
             for (int j = 0; j < map[regionCoord.x, regionCoord.y].Count; j++) {
-                LivingEntity entity = map[regionCoord.x, regionCoord.y][j];
+                T entity = map[regionCoord.x, regionCoord.y][j];
                 float sqrDst = Coord.SqrDistance (entity.coord, origin);
                 if (sqrDst < sqrViewDst) {
                     if (EnvironmentUtility.TileIsVisibile (origin.x, origin.y, entity.coord.x, entity.coord.y)) {
@@ -51,9 +58,9 @@ public class Map {
 
         return visibleEntities;
     }    
-    public LivingEntity ClosestEntity (Coord origin, float viewDistance) {
+    public T ClosestEntity (Coord origin, float viewDistance) {
         List<RegionInfo> visibleRegions = GetRegionsInView (origin, viewDistance);
-        LivingEntity closestEntity = null;
+        T closestEntity = default(T);
         float closestSqrDst = viewDistance * viewDistance + 0.01f;
 
         for (int i = 0; i < visibleRegions.Count; i++) {
@@ -66,7 +73,7 @@ public class Map {
             Coord regionCoord = visibleRegions[i].coord;
 
             for (int j = 0; j < map[regionCoord.x, regionCoord.y].Count; j++) {
-                LivingEntity entity = map[regionCoord.x, regionCoord.y][j];
+                T entity = map[regionCoord.x, regionCoord.y][j];
                 float sqrDst = Coord.SqrDistance (entity.coord, origin);
                 if (sqrDst < closestSqrDst) {
                     if (EnvironmentUtility.TileIsVisibile (origin.x, origin.y, entity.coord.x, entity.coord.y)) {
@@ -115,7 +122,7 @@ public class Map {
         return regions;
     }
 
-    public void Add (LivingEntity e, Coord coord) {
+    public void Add (T e, Coord coord) {
         int regionX = coord.x / regionSize;
         int regionY = coord.y / regionSize;
 
@@ -127,7 +134,7 @@ public class Map {
         numEntities++;
     }
 
-    public void Remove (LivingEntity e, Coord coord) {
+    public void Remove (T e, Coord coord) {
         int regionX = coord.x / regionSize;
         int regionY = coord.y / regionSize;
 
@@ -142,8 +149,8 @@ public class Map {
             }
             catch
             {
-                Debug.Log(index, e);
-                Debug.Log(map[regionX,regionY], e);
+                Debug.Log(index, e as GameObject);
+                Debug.Log(map[regionX,regionY], e as GameObject);
             }
         }
         // Remove last entity from the list
@@ -159,7 +166,7 @@ public class Map {
         
     }
 
-    public void Move (LivingEntity e, Coord fromCoord, Coord toCoord) {
+    public void Move (T e, Coord fromCoord, Coord toCoord) {
         Remove (e, fromCoord);
         Add (e, toCoord);
     }

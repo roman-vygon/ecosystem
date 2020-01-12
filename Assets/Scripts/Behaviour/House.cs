@@ -13,6 +13,7 @@ public class House : Building
         occupant1 = builder;
         occupant2 = builder.mate as Human;
         (builder.mate as Human).myHouse = this;
+        buildingType = BuildingTypes.House;
     }
 
     // Start is called before the first frame update
