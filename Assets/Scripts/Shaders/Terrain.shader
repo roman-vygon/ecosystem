@@ -1,38 +1,33 @@
-﻿Shader "Custom/Terrain"
-{
-    Properties
-    {
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
-    }
-    SubShader
-    {
-        Tags { "RenderType"="Opaque" }
-        LOD 200
+﻿// Upgrade NOTE: replaced 'SeperateSpecular' with 'SeparateSpecular'
 
-        CGPROGRAM
-        // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf Standard fullforwardshadows
-        
-        // Use shader model 3.0 target, to get nicer looking lighting
-        #pragma target 3.0
+Shader " Vertex Colored" {
+	Properties{
+		_Color("Main Color", Color) = (1,1,1,1)
+		_SpecColor("Spec Color", Color) = (1,1,1,1)
+		_Emission("Emmisive Color", Color) = (0,0,0,0)
+		_Shininess("Shininess", Range(0.01, 1)) = 0.7
+		_MainTex("Base (RGB)", 2D) = "white" {}
+	}
 
-        sampler2D _MainTex;
+		SubShader{
+			Pass {
+				Material {
+					Shininess[_Shininess]
+					Specular[_SpecColor]
+					Emission[_Emission]
+				}
+				ColorMaterial AmbientAndDiffuse
+				Lighting On
+				SeparateSpecular On
+				SetTexture[_MainTex] {
+					Combine texture * primary, texture * primary
+				}
+				SetTexture[_MainTex] {
+					constantColor[_Color]
+					Combine previous * constant DOUBLE, previous * constant
+				}
+			}
+	}
 
-        struct Input
-        {
-            float2 uv_MainTex;
-        };
-
-        float4 _StartCols[3];
-        float4 _EndCols[3];
-
-        void surf (Input IN, inout SurfaceOutputStandard o)
-        {
-            int colIndex = (int)IN.uv_MainTex.x;
-            float t = IN.uv_MainTex.y;
-            o.Albedo = lerp(_StartCols[colIndex],_EndCols[colIndex],t);
-        }
-        ENDCG
-    }
-    FallBack "Diffuse"
+		Fallback " VertexLit", 1
 }

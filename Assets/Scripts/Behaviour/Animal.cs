@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Animal : LivingEntity {
 
-    public const int maxViewDistance = 20;
+    public const int maxViewDistance = 50;
 
     [EnumFlags]
     public Species diet;    
@@ -15,15 +15,15 @@ public class Animal : LivingEntity {
 
     // Settings:
     float timeBetweenActionChoices = 1;
-    float moveSpeed = 2.5f;
+    public float moveSpeed = 2.5f;
     public float timeToDeathByHunger = 128;
     float timeToGrowth = 32;
     public float timeToDeathByThirst = 64;
-
+    public float timeToDeathByReproduction = 128;
     float drinkDuration = 3;
     float eatDuration = 5;
 
-    float criticalPercent = 0.7f;
+    protected float criticalPercent = 0.7f;
 
     public int numOffsprings;
     // Visual settings:
@@ -36,7 +36,9 @@ public class Animal : LivingEntity {
     public float thirst;
     public float size;
     public float reproductionWill;
-    
+
+    [Space(20)]
+
     protected LivingEntity foodTarget;
     protected Coord waterTarget;
 
@@ -56,7 +58,7 @@ public class Animal : LivingEntity {
     protected Coord[] path;
     protected int pathIndex;    
     // Other
-    float lastActionChooseTime;
+    protected float lastActionChooseTime;
     const float sqrtTwo = 1.4142f;
     const float oneOverSqrtTwo = 1 / sqrtTwo;
 
@@ -64,11 +66,11 @@ public class Animal : LivingEntity {
         base.Init (coord);        
         moveFromCoord = coord;
         genes = Genes.RandomGenes (1);
-        hunger = (float)Environment.getRandomDouble() * 0.5f;
+        
+        size = (float)Environment.getRandomDouble() * 0.3f + 0.3f;
 
-
-        hunger = (float)Environment.getRandomDouble() * 0.7f;
-        thirst = (float)Environment.getRandomDouble() * 0.7f;
+        hunger = (float)Environment.getRandomDouble() * 0.3f + 0.3f;
+        thirst = (float)Environment.getRandomDouble() * 0.2f + 0.2f;
         reproductionWill = 0f;
 
         baseScale = transform.localScale;
@@ -79,8 +81,8 @@ public class Animal : LivingEntity {
     protected virtual void Update () {
         base.Update();
         // Increase hunger and thirst over time
-        hunger += Time.deltaTime * 1 / timeToDeathByHunger;
-        reproductionWill += Time.deltaTime  * 4 * size / timeToDeathByHunger;
+        hunger += Time.deltaTime * 1 / timeToDeathByHunger ;
+        reproductionWill += Time.deltaTime  * size / timeToDeathByReproduction;
         reproductionWill = Mathf.Clamp01(reproductionWill);
         size += Time.deltaTime * 1 / timeToGrowth;
         size = Mathf.Clamp01(size);
@@ -138,15 +140,15 @@ public class Animal : LivingEntity {
         // Eat if (more hungry than thirsty) or (currently eating and not critically thirsty)
         bool currentlyEating = currentAction == CreatureAction.Eating && foodTarget && hunger > 0;
         bool currentlyDrinking = currentAction == CreatureAction.Drinking && thirst > 0;
-        if ((hunger >= thirst && hunger > 0.35) || currentlyEating && thirst < criticalPercent) {
+        if ((hunger >= thirst && hunger > 0.55) || currentlyEating && thirst < criticalPercent) {
             FindFood ();
         }
         // More thirsty than hungry
         else {
-            if (thirst > 0.35 || currentlyDrinking)
+            if (thirst > 0.55 || currentlyDrinking)
                 FindWater();
             else
-            if (reproductionWill > 0.35)
+            if (reproductionWill > 0.55)
             {
                 currentAction = CreatureAction.SearchingForMate;
                 FindMate();
@@ -395,6 +397,7 @@ public class Animal : LivingEntity {
         if (Application.isPlaying) {
             var surroundings = Environment.Sense (coord);
             Gizmos.color = Color.white;
+            Gizmos.DrawWireSphere(transform.position, Animal.maxViewDistance);
             if (surroundings.nearestFoodSource != null) {
                 Gizmos.DrawLine (transform.position, surroundings.nearestFoodSource.transform.position);
             }

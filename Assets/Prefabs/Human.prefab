@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 7990116638631473043}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children:
   - {fileID: 2184992902725916570}
   - {fileID: 3611837785266652688}
@@ -69,13 +69,15 @@ MonoBehaviour:
   mapCoord:
     x: 0
     y: 0
-  diet: 6
+  diet: 1830
   currentAction: 0
   maleColour: {r: 0.8679245, g: 0.045033824, b: 0.045033824, a: 0}
   femaleColour: {r: 0.09416164, g: 0.8679245, b: 0.10193505, a: 0}
+  moveSpeed: 3
   timeToDeathByHunger: 256
   timeToDeathByThirst: 128
-  numOffsprings: 1
+  timeToDeathByReproduction: 128
+  numOffsprings: 2
   hunger: 0
   thirst: 0
   size: 0
@@ -83,8 +85,11 @@ MonoBehaviour:
   hunter: {fileID: 0}
   mate: {fileID: 0}
   Male: 0
-  House: {fileID: -1551259198748328597, guid: aff8e0d26e2dbd44c86e8a47dd12ab3d, type: 3}
+  myFarm: {fileID: 0}
   myHouse: {fileID: 0}
+  house: {fileID: -1551259198748328597, guid: aff8e0d26e2dbd44c86e8a47dd12ab3d, type: 3}
+  farm: {fileID: 1311603761480506641, guid: e82b1437506b174488b45e786f589bf5, type: 3}
+  barn: {fileID: 5525765973412430319, guid: b4773c20a65d14e4484b47f49a39162a, type: 3}
 --- !u!1001 &8603396577785982218
 PrefabInstance:
   m_ObjectHideFlags: 0

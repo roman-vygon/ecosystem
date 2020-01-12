@@ -5,6 +5,8 @@ namespace TerrainGeneration {
     [ExecuteInEditMode]
     public class TerrainGenerator : MonoBehaviour {
 
+       
+
         const string meshHolderName = "Terrain Mesh";
 
         public bool autoUpdate = true;
@@ -45,6 +47,11 @@ namespace TerrainGeneration {
         }
 
         public TerrainData Generate () {
+
+            List<Color> colors = new List<Color>();
+            Color[] startCols = { water.startCol, sand.startCol, grass.startCol };
+            Color[] endCols = { water.endCol, sand.endCol, grass.endCol };
+
             CreateMeshComponents ();
 
             int numTilesPerLine = Mathf.CeilToInt (worldSize);
@@ -71,7 +78,10 @@ namespace TerrainGeneration {
             for (int y = 0; y < numTilesPerLine; y++) {
                 for (int x = 0; x < numTilesPerLine; x++) {
                     Vector2 uv = GetBiomeInfo (map[x, y], biomes);
-                    uvs.AddRange (new Vector2[] { uv, uv, uv, uv });
+                    //Vector2 uv = GetBiomeInfo(map[x, y], biomes);
+                    // uvs.AddRange (new Vector2[] { uv, uv, uv, uv });  <-- not needed anymore
+                    var color = Color.Lerp(startCols[(int)uv.x], endCols[(int)uv.x], uv.y);
+                    colors.AddRange(new[] { color, color, color, color });
 
                     bool isWaterTile = uv.x == 0f;
                     bool isLandTile = !isWaterTile;
@@ -129,7 +139,8 @@ namespace TerrainGeneration {
                                 vertices.Add (tileVertices[edgeVertIndexB]);
                                 vertices.Add (tileVertices[edgeVertIndexB] + Vector3.down * depth);
 
-                                uvs.AddRange (new Vector2[] { uv, uv, uv, uv });
+                                // uvs.AddRange (new Vector2[] { uv, uv, uv, uv });
+                                colors.AddRange(new[] { color, color, color, color });
                                 int[] sideTriIndices = { vertIndex, vertIndex + 1, vertIndex + 2, vertIndex + 1, vertIndex + 3, vertIndex + 2 };
                                 triangles.AddRange (sideTriIndices);
                                 normals.AddRange (new Vector3[] { sideNormalsByDir[i], sideNormalsByDir[i], sideNormalsByDir[i], sideNormalsByDir[i] });
@@ -146,7 +157,8 @@ namespace TerrainGeneration {
             // Update mesh:
             mesh.SetVertices (vertices);
             mesh.SetTriangles (triangles, 0, true);
-            mesh.SetUVs (0, uvs);
+            // mesh.SetUVs (0, uvs);  <-- no longer needed
+            mesh.SetColors(colors);
             mesh.SetNormals (normals);
 
             meshRenderer.sharedMaterial = mat;

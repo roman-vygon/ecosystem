@@ -8,7 +8,9 @@
     Eating,
     Drinking,
     SearchingForMate,
-    Building,
-    RestingInHome,
-    RunningAway
+    Building,    
+    RunningAway,
+    BuildingFarm,
+    WorkingAtFarm,
+    GoingToBarn
 }

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3874918950189636065}
   - component: {fileID: 5618443917203713628}
   m_Layer: 0
-  m_Name: Bunny
+  m_Name: Squirell
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colourMaterialIndex: 0
-  species: 4
+  species: 256
   material: {fileID: 2100000, guid: 653a1f36075e7ec438c4aa94148dc96d, type: 2}
   coord:
     x: 0
@@ -57,13 +57,15 @@ MonoBehaviour:
   mapCoord:
     x: 0
     y: 0
-  diet: 2
+  diet: 1538
   currentAction: 0
   maleColour: {r: 1, g: 0, b: 0, a: 0}
   femaleColour: {r: 0.12677497, g: 0.9339623, b: 0, a: 0}
+  moveSpeed: 2.5
   timeToDeathByHunger: 128
-  timeToDeathByThirst: 64
-  numOffsprings: 3
+  timeToDeathByThirst: 128
+  timeToDeathByReproduction: 80
+  numOffsprings: 2
   hunger: 0
   thirst: 0
   size: 0

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Plant : LivingEntity {
     float amountRemaining = 1;
-    const float consumeSpeed = 1;
+    public float consumeSpeed = 1;
     float lastReproductionTime;
     
     public float timeToReproduct = 64;

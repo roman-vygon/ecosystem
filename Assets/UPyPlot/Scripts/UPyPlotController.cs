@@ -118,7 +118,7 @@ namespace UPyPlot {
 							{ 
 								monos.Add (m); // Cache the monobehavior script for this field.
 								probes.Add (fieldInfo); // Cahce the fieldInfo.
-								Debug.Log ("Obj: " + m.name + "|" + m.GetType().Name + ", Field: " + fieldInfo.Name + ", Type: " + fieldInfo.GetValue(m) ) ;
+								//Debug.Log ("Obj: " + m.name + "|" + m.GetType().Name + ", Field: " + fieldInfo.Name + ", Type: " + fieldInfo.GetValue(m) ) ;
 							}
 						}
 					} catch {

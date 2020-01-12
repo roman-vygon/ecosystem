@@ -147,9 +147,16 @@ public class Map {
             }
         }
         // Remove last entity from the list
+        try
+        {
+            map[regionX, regionY].RemoveAt(lastElementIndex);
+            numEntities--;
+        }
+        catch
+        {
+
+        }
         
-        map[regionX, regionY].RemoveAt (lastElementIndex);
-        numEntities--;
     }
 
     public void Move (LivingEntity e, Coord fromCoord, Coord toCoord) {

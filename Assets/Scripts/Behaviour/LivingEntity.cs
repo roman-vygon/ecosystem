@@ -9,7 +9,7 @@ public class LivingEntity : MonoBehaviour {
 
     public float timeToDie;
     float birthTime;
-    //
+    
     [HideInInspector]
     public int mapIndex;
     [HideInInspector]
@@ -41,6 +41,7 @@ public class LivingEntity : MonoBehaviour {
             dead = true;
             Environment.RegisterDeath (this);
             Destroy (gameObject);
+            Environment.AddDeath(species, cause);
         }
         else
         {

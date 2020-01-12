@@ -2,23 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class House : MonoBehaviour
+public class House : Building
 {
-    public Coord coord;
+    
     Human occupant1, occupant2;
-    public virtual void Init(Coord coord, Human occupant1, Human occupant2)
+    public override void Init(Coord coord, Human builder)
     {
         this.coord = coord;
         transform.position = Environment.tileCentres[coord.x, coord.y];
-        this.occupant1 = occupant1;
-        this.occupant2 = occupant2;
+        occupant1 = builder;
+        occupant2 = builder.mate as Human;
+        (builder.mate as Human).myHouse = this;
     }
-     
+
     // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+
 
     // Update is called once per frame
     void Update()

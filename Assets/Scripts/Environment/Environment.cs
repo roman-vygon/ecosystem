@@ -13,10 +13,22 @@ public class Environment : MonoBehaviour {
     float logInterval = 1;
 
     [UPyPlot.UPyPlotController.UPyProbe]
-    float numRabbit;
+    float numSquirell;
 
     [UPyPlot.UPyPlotController.UPyProbe]
-    float numFox;
+    float numDuck;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numBabyYoda;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numShark;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numDeer;
+
+    [UPyPlot.UPyPlotController.UPyProbe]
+    float numZombie;
 
     [UPyPlot.UPyPlotController.UPyProbe]
     float numHuman;
@@ -101,11 +113,12 @@ public class Environment : MonoBehaviour {
 
     public static Animal SensePredators(Animal e)
     {
+        float radius = Animal.maxViewDistance * 1f / 5f;
         List<LivingEntity> hunters = new List<LivingEntity>();
         foreach (Species s in preyBySpecies.Keys)
             if (preyBySpecies[s].Contains(e.species))
-                hunters.AddRange(speciesMaps[s].GetEntities(e.coord, Animal.maxViewDistance));
-        float minDist = Animal.maxViewDistance*Animal.maxViewDistance + 1;
+                hunters.AddRange(speciesMaps[s].GetEntities(e.coord, radius));
+        float minDist = radius * radius + 1;
         if (hunters.Count == 0)
             return null;
         Animal predator = null;
@@ -121,6 +134,10 @@ public class Environment : MonoBehaviour {
                     }
         }        
         return predator;
+    }
+    public static T senseBuilding<T>(Coord coord, Human self)
+    {
+
     }
     public static LivingEntity SenseFood (Coord coord, Animal self, System.Func<LivingEntity, LivingEntity, int> foodPreference) {
         var foodSources = new List<LivingEntity> ();
@@ -150,7 +167,7 @@ public class Environment : MonoBehaviour {
     // Return list of animals of the same species, with the opposite gender, who are also searching for a mate
     public static List<Animal> SensePotentialMates (Coord coord, Animal self) {
         Map speciesMap = speciesMaps[self.species];
-        List<LivingEntity> visibleEntities = speciesMap.GetEntities (coord, Animal.maxViewDistance);
+        List<LivingEntity> visibleEntities = speciesMap.GetEntities (coord, Animal.maxViewDistance/2);
         var potentialMates = new List<Animal> ();
         
         for (int i = 0; i < visibleEntities.Count; i++) {
@@ -161,7 +178,7 @@ public class Environment : MonoBehaviour {
                 }
             }
         }
-
+        
         return potentialMates;
     }    
     public static House SenseHouse(Coord coord, float radius)
@@ -387,7 +404,7 @@ public class Environment : MonoBehaviour {
 
         //Write some text to the test.txt file
         StreamWriter writer = new StreamWriter(path, true);
-        writer.Write(text);
+        writer.WriteLine(text);
         writer.Close();
     }
         void SpawnTrees () {
@@ -453,7 +470,12 @@ public class Environment : MonoBehaviour {
 
                 var entity = Instantiate (pop.prefab);
                 
-                entity.Init (coord);                
+                entity.Init (coord);
+                if (entity is Animal)
+                {
+                    (entity as Animal).hunger = 0.1f;
+                    (entity as Animal).thirst = 0.1f;
+                }
                 
                 speciesMaps[entity.species].Add (entity, coord);
             }
@@ -486,25 +508,31 @@ public class Environment : MonoBehaviour {
             print (s);
         }
     }
+    static public void AddDeath(Species species, CauseOfDeath cause)
+    {
+        WriteString("death.txt", species.ToString() + " " + cause.ToString());
+    }
     void Update()
     {
-        numFox = speciesMaps[Species.Fox].numEntities;
+        numBabyYoda = speciesMaps[Species.BabyYoda].numEntities;
 
         numHuman = speciesMaps[Species.Human].numEntities;
 
         numPlant = speciesMaps[Species.Plant].numEntities;
 
-        numRabbit = speciesMaps[Species.Rabbit].numEntities;
+        numDeer = speciesMaps[Species.Deer].numEntities;
 
-        if (Time.time - lastLogTime > logInterval)
-        {
-            WriteString("fox.txt", speciesMaps[Species.Fox].numEntities.ToString() + ", ");
-            WriteString("rabbit.txt", speciesMaps[Species.Rabbit].numEntities.ToString() + ", ");
-            WriteString("human.txt", speciesMaps[Species.Human].numEntities.ToString() + ", ");
-            WriteString("plant.txt", speciesMaps[Species.Plant].numEntities.ToString() + ", ");
-            lastLogTime = Time.time;
-        }
-        
+        numShark = speciesMaps[Species.Shark].numEntities;
+
+        numZombie = speciesMaps[Species.Zombie].numEntities;
+
+        numDuck = speciesMaps[Species.Duck].numEntities;
+
+        numSquirell = speciesMaps[Species.Squirell].numEntities;
+
+
+
+
     }
     [System.Serializable]
     public struct Population {
