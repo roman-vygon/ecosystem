@@ -89,4 +89,8 @@ public struct Coord {
     public override string ToString () {
         return "(" + x + " ; " + y + ")";
     }
+    static public int CoordPenalty(ICoordInterface self, ICoordInterface other)
+    {
+        return SqrDistance(self.coord, other.coord);
+    }
 }

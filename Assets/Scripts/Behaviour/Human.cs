@@ -79,15 +79,10 @@ public class Human : Animal
         {
             if (genes.isMale)
             {
-                House nearest = Environment.SenseHouse(coord, 500);
-                Coord nearestHouse;
-                if (nearest == null)
-                    nearestHouse = coord;
-                else
-                    nearestHouse = nearest.coord;
+                House nearest = Environment.senseBuilding(BuildingTypes.House, this) as House;                
 
-                if (nearestHouse != null)
-                    buildingPlace = chooseNear(nearestHouse);
+                if (nearest != null)
+                    buildingPlace = chooseNear(nearest.coord);
                 else
                     buildingPlace = chooseNear(coord);
 

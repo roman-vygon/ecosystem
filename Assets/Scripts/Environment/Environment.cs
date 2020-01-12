@@ -144,9 +144,22 @@ public class Environment : MonoBehaviour {
         }        
         return predator;
     }
-    public static void senseBuilding<T>(Coord coord, Human self)
+    public static Building senseBuilding(BuildingTypes buildingType, Human self)
     {
-        
+        Coord coord = self.coord;
+        List<Building> visibleBuildings = buildingMaps[buildingType].GetEntities(coord, Animal.maxViewDistance);
+
+        visibleBuildings.Sort((a, b) => Coord.CoordPenalty(self, a).CompareTo(Coord.CoordPenalty(self, b)));
+
+        // Return first visible food source
+        for (int i = 0; i < visibleBuildings.Count; i++)
+        {
+            Coord targetCoord = visibleBuildings[i].coord;
+            if (EnvironmentUtility.TileIsVisibile(coord.x, coord.y, targetCoord.x, targetCoord.y))            
+                return visibleBuildings[i];            
+        }
+
+        return null;
     }
     public static LivingEntity SenseFood (Coord coord, Animal self, System.Func<LivingEntity, LivingEntity, int> foodPreference) {
         var foodSources = new List<LivingEntity> ();
@@ -189,23 +202,7 @@ public class Environment : MonoBehaviour {
         }
         
         return potentialMates;
-    }    
-    public static House SenseHouse(Coord coord, float radius)
-    {
-        House[] houses = FindObjectsOfType<House>();
-        float sqrViewDst = radius*radius;
-        House nearestHouse = null;
-        foreach (House house in houses)
-        {
-            float dist = Coord.SqrDistance(coord, house.coord);
-            if (dist < sqrViewDst)
-            {
-                sqrViewDst = dist;
-                nearestHouse = house;
-            }
-        }
-        return nearestHouse;
-    }
+    }        
     public static Surroundings Sense (Coord coord) {
         var closestPlant = speciesMaps[Species.Plant].ClosestEntity (coord, Animal.maxViewDistance);
         var surroundings = new Surroundings ();
