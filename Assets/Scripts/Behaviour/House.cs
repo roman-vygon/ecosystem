@@ -12,7 +12,8 @@ public class House : Building
         transform.position = Environment.tileCentres[coord.x, coord.y];
         occupant1 = builder;
         occupant2 = builder.mate as Human;
-        (builder.mate as Human).myHouse = this;
+        occupant1.myHouse = this;
+        occupant2.myHouse = this;
         buildingType = BuildingTypes.House;
     }
 
@@ -23,6 +24,9 @@ public class House : Building
     void Update()
     {
         if (occupant1 == null || occupant2 == null)
+        {
+            Environment.RegisterDeath(this);
             Destroy(gameObject);
+        }
     }
 }

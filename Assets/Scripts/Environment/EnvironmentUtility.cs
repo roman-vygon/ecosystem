@@ -4,8 +4,9 @@ using UnityEngine;
 
 public static class EnvironmentUtility {
 
+    public static Dictionary<Species, LivingEntity> prefabBySpecies = new Dictionary<Species, LivingEntity>();
+    
     // returns true if unobstructed line of sight to target tile
-    public static Dictionary<Species,LivingEntity> prefabBySpecies = new Dictionary<Species, LivingEntity>();
     public static bool TileIsVisibile (int x, int y, int x2, int y2) {
         // bresenham line algorithm
         int w = x2 - x;
@@ -120,6 +121,7 @@ public static class EnvironmentUtility {
             // If not walkable, path is invalid so return null
             // (unless is target tile, which may be unwalkable e.g water)
             if (i != longest && !Environment.walkable[x, y]) {
+              //  Debug.Log("WHYYY");
                 return null;
             }
             path[i - 1] = new Coord (x, y);

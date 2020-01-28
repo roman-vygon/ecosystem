@@ -8,7 +8,7 @@ public class LivingEntity : MonoBehaviour, ICoordInterface {
     public Coord coord { get; set; }
 
     public float timeToDie;
-    float birthTime;
+    protected float birthTime;
     
     [HideInInspector]
     public int mapIndex { get; set; }
@@ -21,6 +21,7 @@ public class LivingEntity : MonoBehaviour, ICoordInterface {
         this.coord = coord;
         transform.position = Environment.tileCentres[coord.x, coord.y];
 
+        dead = false;
         // Set material to the instance material
         var meshRenderer = transform.GetComponentInChildren<MeshRenderer> ();
         for (int i = 0; i < meshRenderer.sharedMaterials.Length; i++)
@@ -31,7 +32,7 @@ public class LivingEntity : MonoBehaviour, ICoordInterface {
             }
         }
     }
-    public virtual void Start()
+    public virtual void onEnable()
     {
         birthTime = Time.time;
     }
@@ -40,8 +41,9 @@ public class LivingEntity : MonoBehaviour, ICoordInterface {
         if (!dead) {
             dead = true;
             Environment.RegisterDeath (this);
-            Destroy (gameObject);
-            Environment.AddDeath(species, cause);
+            Environment.objectPools[species].Return(this);
+            //Destroy (gameObject);
+            //Environment.AddDeath(species, cause);
         }
         else
         {

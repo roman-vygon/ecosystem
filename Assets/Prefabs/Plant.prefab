@@ -47,16 +47,9 @@ MonoBehaviour:
   colourMaterialIndex: 0
   species: 2
   material: {fileID: 2100000, guid: 02a4e750351384d329bc471b9575ec7b, type: 2}
-  coord:
-    x: 0
-    y: 0
-  timeToDie: 121
-  mapIndex: 0
-  mapCoord:
-    x: 0
-    y: 0
+  timeToDie: 75
   consumeSpeed: 1
-  timeToReproduct: 60
+  timeToReproduct: 37
 --- !u!1001 &4316666322519822088
 PrefabInstance:
   m_ObjectHideFlags: 0

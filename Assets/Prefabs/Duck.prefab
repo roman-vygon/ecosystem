@@ -49,14 +49,7 @@ MonoBehaviour:
   colourMaterialIndex: 0
   species: 4
   material: {fileID: 2100000, guid: 653a1f36075e7ec438c4aa94148dc96d, type: 2}
-  coord:
-    x: 0
-    y: 0
   timeToDie: 256
-  mapIndex: 0
-  mapCoord:
-    x: 0
-    y: 0
   diet: 1538
   currentAction: 0
   maleColour: {r: 1, g: 0, b: 0, a: 0}
@@ -64,7 +57,7 @@ MonoBehaviour:
   moveSpeed: 2
   timeToDeathByHunger: 128
   timeToDeathByThirst: 128
-  timeToDeathByReproduction: 80
+  timeToDeathByReproduction: 64
   numOffsprings: 3
   hunger: 0
   thirst: 0

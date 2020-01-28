@@ -20,8 +20,8 @@ public class Animal : LivingEntity {
     float timeToGrowth = 32;
     public float timeToDeathByThirst = 64;
     public float timeToDeathByReproduction = 128;
-    float drinkDuration = 3;
-    float eatDuration = 5;
+    protected float drinkDuration = 3;
+    protected float eatDuration = 5;
 
     protected float criticalPercent = 0.7f;
 
@@ -39,7 +39,7 @@ public class Animal : LivingEntity {
 
     [Space(20)]
 
-    protected LivingEntity foodTarget;
+    protected ICoordInterface foodTarget;
     protected Coord waterTarget;
 
     Vector3 baseScale;
@@ -66,7 +66,7 @@ public class Animal : LivingEntity {
         base.Init (coord);        
         moveFromCoord = coord;
         genes = Genes.RandomGenes (1);
-        
+        mate = null;
         size = (float)Environment.getRandomDouble() * 0.3f + 0.3f;
 
         hunger = (float)Environment.getRandomDouble() * 0.3f + 0.3f;
@@ -138,7 +138,7 @@ public class Animal : LivingEntity {
           //  return;
         // Decide next action:
         // Eat if (more hungry than thirsty) or (currently eating and not critically thirsty)
-        bool currentlyEating = currentAction == CreatureAction.Eating && foodTarget && hunger > 0;
+        bool currentlyEating = currentAction == CreatureAction.Eating && foodTarget != null && !foodTarget.Equals(null) && hunger > 0;
         bool currentlyDrinking = currentAction == CreatureAction.Drinking && thirst > 0;
         if ((hunger >= thirst && hunger > 0.55) || currentlyEating && thirst < criticalPercent) {
             FindFood ();
@@ -240,8 +240,10 @@ public class Animal : LivingEntity {
         Wait(fSeconds);        
         for (int i = 0; i < numOffsprings; ++i)
         {
-            var entity = Instantiate(EnvironmentUtility.prefabBySpecies[species]);
+            Animal entity = Environment.objectPools[species].Get() as Animal;
+            //var entity = Instantiate(EnvironmentUtility.prefabBySpecies[species]);
             entity.Init(coord);
+            entity.onEnable();
             Environment.RegisterBirth(entity, coord);
         }
 
@@ -352,16 +354,20 @@ public class Animal : LivingEntity {
         }
     }
 
-    void HandleInteractions () {
+    protected virtual void HandleInteractions () {
         if (currentAction == CreatureAction.Eating) {            
-            if (foodTarget && hunger > 0) {
-                float eatAmount = Mathf.Min (hunger, Time.deltaTime * 1 / eatDuration);                
+            if (foodTarget != null && !foodTarget.Equals(null) && hunger > 0) {
+
+
+                float eatAmount = Mathf.Min (hunger, Time.deltaTime * 1 / eatDuration);
+
                 if (foodTarget is Animal)
                 {
-                    foodTarget.Die (CauseOfDeath.Eaten);
+                    (foodTarget as Animal).Die (CauseOfDeath.Eaten);
                     hunger = 0.0f;                    
-                }
-                else
+                }   
+                
+                if (foodTarget is Plant)
                 {
                     eatAmount = ((Plant)foodTarget).Consume(eatAmount);
                     hunger -= eatAmount;
@@ -393,7 +399,7 @@ public class Animal : LivingEntity {
         }
     }
 
-    void OnDrawGizmosSelected () {
+    protected virtual void OnDrawGizmosSelected () {
         if (Application.isPlaying) {
             var surroundings = Environment.Sense (coord);
             Gizmos.color = Color.white;

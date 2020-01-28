@@ -9,8 +9,7 @@
     Drinking,
     SearchingForMate,
     Building,    
-    RunningAway,
-    BuildingFarm,
+    RunningAway,    
     WorkingAtFarm,
     GoingToBarn
 }

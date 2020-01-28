@@ -8,6 +8,7 @@ public class Plant : LivingEntity {
     float lastReproductionTime;
     
     public float timeToReproduct = 64;
+    
     public float Consume (float amount) {
         float amountConsumed = Mathf.Max (0, Mathf.Min (amountRemaining, amount));
         amountRemaining -= amount * consumeSpeed;
@@ -15,25 +16,27 @@ public class Plant : LivingEntity {
         transform.localScale = Vector3.one * amountRemaining;
 
         if (amountRemaining <= 0) {
-            Die (CauseOfDeath.Eaten);
+            Die (CauseOfDeath.Eaten);                   
         }
 
         return amountConsumed;
     }
-    override public void Start()
+    public void onEnable()
     {
-        base.Start();
+        birthTime = Time.time;
         lastReproductionTime = Time.time;
     }
     void Reproduct()
     {
         lastReproductionTime = Time.time;
-        LivingEntity prefab = EnvironmentUtility.prefabBySpecies[species];
+        //LivingEntity prefab = EnvironmentUtility.prefabBySpecies[species];
         Coord spwnPoint = Environment.GetNextTileRandom(coord);
         if (spwnPoint == coord)
             return;
-        var entity = Instantiate(prefab);
+        var entity = Environment.objectPools[species].Get() as Plant;
         entity.Init(spwnPoint);
+        entity.onEnable();
+        Debug.Log(Time.time - entity.lastReproductionTime, this);
         Environment.RegisterBirth(entity, spwnPoint);
     }
     void Update()

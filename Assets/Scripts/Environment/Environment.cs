@@ -56,7 +56,8 @@ public class Environment : MonoBehaviour {
     static int size;
     static Coord[, ][] walkableNeighboursMap;
     static List<Coord> walkableCoords;
-    
+
+    public static Dictionary<Species, GenericPool<LivingEntity>> objectPools;
     static Dictionary<Species, List<Species>> preyBySpecies;
     static Dictionary<Species, List<Species>> predatorsBySpecies;
 
@@ -104,7 +105,10 @@ public class Environment : MonoBehaviour {
     public static void RegisterDeath (ICoordInterface entity) {
 
         if (entity is LivingEntity)
+        {
+
             speciesMaps[(entity as LivingEntity).species].Remove((entity as LivingEntity), entity.coord);
+        }
 
         if (entity is Building)
             buildingMaps[(entity as Building).buildingType].Add((entity as Building), entity.coord);
@@ -144,7 +148,7 @@ public class Environment : MonoBehaviour {
         }        
         return predator;
     }
-    public static Building senseBuilding(BuildingTypes buildingType, Human self)
+    public static Building senseBuilding(BuildingTypes buildingType, Human self, System.Func<ICoordInterface, ICoordInterface, int> preferenceFunc)
     {
         Coord coord = self.coord;
         List<Building> visibleBuildings = buildingMaps[buildingType].GetEntities(coord, Animal.maxViewDistance);
@@ -288,7 +292,22 @@ public class Environment : MonoBehaviour {
     static public int getInt(int left, int right)
     {
         return prng.Next(left, right);
+    }    
+    public void onGet(LivingEntity entity)
+    {
+        entity.gameObject.SetActive(true);
     }
+
+    public void onReturn(LivingEntity entity)
+    {
+        entity.gameObject.SetActive(false);
+    }
+    public LivingEntity getInstance(Species species)
+    {
+        return Instantiate(EnvironmentUtility.prefabBySpecies[species]) as LivingEntity;
+    }
+
+  
     // Call terrain generator and cache useful info
     void Init () {
         var sw = System.Diagnostics.Stopwatch.StartNew ();
@@ -305,14 +324,16 @@ public class Environment : MonoBehaviour {
         preyBySpecies = new Dictionary<Species, List<Species>> ();
         predatorsBySpecies = new Dictionary<Species, List<Species>> ();
 
+        
         // Init maps
         speciesMaps = new Dictionary<Species, Map<LivingEntity>> ();
         buildingMaps = new Dictionary<BuildingTypes, Map<Building>>();
-
+        objectPools = new Dictionary<Species, GenericPool<LivingEntity>>();        
+        
         for (int i = 0; i < numSpecies; i++) {
             Species species = (Species) (1 << i);
             speciesMaps.Add (species, new Map<LivingEntity> (size, mapRegionSize));
-
+            
             preyBySpecies.Add (species, new List<Species> ());
             predatorsBySpecies.Add (species, new List<Species> ());
         }        
@@ -482,9 +503,9 @@ public class Environment : MonoBehaviour {
                 int spawnCoordIndex = spawnPrng.Next (0, spawnCoords.Count);
                 Coord coord = spawnCoords[spawnCoordIndex];
                 spawnCoords.RemoveAt (spawnCoordIndex);
-
-                var entity = Instantiate (pop.prefab);
-                
+                LivingEntity entity;
+                objectPools[pop.prefab.species] = new GenericPool<LivingEntity>(getInstance, onGet, onReturn, pop.prefab.species);
+                entity = objectPools[pop.prefab.species].Get();
                 entity.Init (coord);
                 if (entity is Animal)
                 {
@@ -533,7 +554,7 @@ public class Environment : MonoBehaviour {
 
         numHuman = speciesMaps[Species.Human].numEntities;
 
-        numPlant = speciesMaps[Species.Plant].numEntities;
+        numPlant = speciesMaps[Species.Plant].numEntities + speciesMaps[Species.GreenPlant].numEntities + speciesMaps[Species.CyanPlant].numEntities;
 
         numDeer = speciesMaps[Species.Deer].numEntities;
 
