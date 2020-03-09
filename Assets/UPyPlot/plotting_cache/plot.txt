@@ -1,7 +1,6 @@
-10,9,12
+9,8,12
 Environment\Environment\numSquirell,Environment\Environment\numDuck,Environment\Environment\numBabyYoda,Environment\Environment\numShark,Environment\Environment\numDeer,Environment\Environment\numZombie,Environment\Environment\numHuman,Environment\Environment\numPlant
 0,0,0,0,0,0,0,0
-100,100,50,50,100,50,50,420
 100,100,50,50,100,50,50,420
 100,100,50,50,100,50,50,420
 100,100,50,50,100,50,50,420
